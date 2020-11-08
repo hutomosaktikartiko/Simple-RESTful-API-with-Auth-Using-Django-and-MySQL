@@ -84,3 +84,56 @@ class CategoryViewSet(viewsets.ViewSet):
         else:
             category.delete()
             return Response({'message': 'Success delete', 'status': True, 'data': {}})
+
+    @action(detail=False, methods=['get'])
+    def notes(self, request):
+        categories = Category.objects.prefetch_related('note').first(user = request.user)
+        serializer = CategoryPlainSerializer(categories, many=True)
+        return Response({'message': 'Success', 'status': True, 'data': serializer.data})
+
+class NoteViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = NoteDescriptiveSerializer
+
+    def list(self, request):
+        notes = Note.objects.select_related('user').filter(user = request.user)
+        serializer = NoteDescriptiveSerializer(notes,many=True)
+        return Response({'message': 'Success', 'status':True, 'data': serializer.data})
+
+    def retrieve(self, request, pk = None):
+        note = Note.objects.filter(id = pk).first()
+        if note is None:
+            return Response({'message': 'Data not found', 'status': False, 'data': {}})
+        else:
+            serializer =NoteDescriptiveSerializer(note, many=False)
+            return Response({'message': 'Success', 'status': True, 'data': serializer.data})
+
+    def create(self, request):
+        serializer = NoteDescriptiveSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            cat = Category.objects.filter(id = request.data.get['category']).first()
+            note = Note(title=serializer.data.get('title'),
+                        description=serializer.data.get('description'),
+                        user=request.user,
+                        category=cat)
+            note.save()
+            return Response({'message': 'Success', 'status': True, 'data': serializer.data})
+
+    def partial_update(self, request, pk = None):
+        note = Note.objects.filter(id = pk).first()
+        if note is None:
+            return Response({'message': 'Data not found', 'status': False, 'data': {}})
+        else:
+            serializer=NoteDescriptiveSerializer(note, data=request.data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response({'message': 'Success', 'status': True, 'data': serializer.data})
+
+    def destroy(self, request, pk = None):
+        note = Note.objects.filter(id = pk).first()
+        if note is None:
+            return Response({'message': 'Data not found', 'status': False, 'data': {}})
+        else:
+            note.delete()
+            return Response({'message': 'Success', 'status': True, 'data': {}})
