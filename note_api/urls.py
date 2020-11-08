@@ -6,8 +6,8 @@ router = DefaultRouter()
 router.register('login', LoginViewSet, basename='login')
 router.register('register', RegisterViewSet, basename='register')
 router.register('category', CategoryViewSet, basename='category')
-router.register('note', Note, basename='note')
+router.register('note', NoteViewSet, basename='note')
 
 urlpatterns = [
-    path['', include(router.urls)]
+    path('', include(router.urls))
 ]

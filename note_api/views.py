@@ -87,8 +87,8 @@ class CategoryViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def notes(self, request):
-        categories = Category.objects.prefetch_related('note').first(user = request.user)
-        serializer = CategoryPlainSerializer(categories, many=True)
+        categories = Category.objects.prefetch_related('note').filter(user = request.user)
+        serializer = CategoryDescriptiveSerializer(categories, many=True)
         return Response({'message': 'Success', 'status': True, 'data': serializer.data})
 
 class NoteViewSet(viewsets.ViewSet):
@@ -112,7 +112,7 @@ class NoteViewSet(viewsets.ViewSet):
     def create(self, request):
         serializer = NoteDescriptiveSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            cat = Category.objects.filter(id = request.data.get['category']).first()
+            cat = Category.objects.filter(id = request.data.get('category')).first()
             note = Note(title=serializer.data.get('title'),
                         description=serializer.data.get('description'),
                         user=request.user,

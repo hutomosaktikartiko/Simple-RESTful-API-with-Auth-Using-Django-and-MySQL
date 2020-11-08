@@ -19,5 +19,5 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api', include('note_api.urls')) #tersambung dengan file urls.py di note_api
+    path('api/', include('note_api.urls')) #tersambung dengan file urls.py di note_api
 ]
